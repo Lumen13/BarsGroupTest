@@ -13,40 +13,35 @@ namespace BarsGroupTest
 {
     class Program
     {
-        static string[] Scopes = { SheetsService.Scope.SpreadsheetsReadonly };
-        static string ApplicationName = "Google Sheets API .NET Quickstart";
+        private static readonly string[] scopes = { SheetsService.Scope.Spreadsheets };
+        private const string applicationName = "BarsGroupTest";
+        private const string spreadsheetId = "1emVkyWkxLp9BudpS7qsYhgBGJn8In8ZwDZGhTJ3xAf0";
+        private const string sheet = "List0";
+        private static SheetsService service;
 
         static void Main(string[] args)
         {
-            Write();
-
-            UserCredential credential;
-
+            GoogleCredential credential;
             using (var stream =
-                new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
+                new FileStream("client_secret.json", FileMode.Open, FileAccess.Read))
             {
-                // The file token.json stores the user's access and refresh tokens, and is created
-                // automatically when the authorization flow completes for the first time.
-                string credPath = "token.json";
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    Scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(credPath, true)).Result;
-                Console.WriteLine("Credential file saved to: " + credPath);
+                credential = GoogleCredential.FromStream(stream).CreateScoped(scopes);
             }
 
             // Create Google Sheets API service.
-            var service = new SheetsService(new BaseClientService.Initializer()
+            service = new SheetsService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credential,
-                ApplicationName = ApplicationName,
+                ApplicationName = applicationName,
             });
 
-            // Define request parameters.
-            string spreadsheetId = "1emVkyWkxLp9BudpS7qsYhgBGJn8In8ZwDZGhTJ3xAf0";
-            string range = "List0!B2:F17";
+            Write(5);
+            Read();
+        }
+
+        private static void Read()
+        {
+            var range = $"{sheet}!B2:H";
             SpreadsheetsResource.ValuesResource.GetRequest request =
                     service.Spreadsheets.Values.Get(spreadsheetId, range);
 
@@ -54,11 +49,10 @@ namespace BarsGroupTest
             IList<IList<Object>> values = response.Values;
             if (values != null && values.Count > 0)
             {
-                Console.WriteLine();
                 foreach (var row in values)
                 {
-                    // Print columns A and E, which correspond to indices 0 and 4.
-                    Console.WriteLine("{0}, {1}, {2}, {3}, {4}", row[0], row[1], row[2], row[3], row[4]);
+                    Console.WriteLine("{0}, {1}, {2}, {3}, {4}",
+                        row[0], row[1], row[2], row[3], row[4]);
                 }
             }
             else
@@ -68,45 +62,22 @@ namespace BarsGroupTest
             Console.Read();
         }
 
-        private static void Write()
+        private static void Write(int count = 1)
         {
-            string WriteRange = "List0!B:F";
-            string WriteRange1 = "List0!B17:F17";
-            string spreadsheetId = "1emVkyWkxLp9BudpS7qsYhgBGJn8In8ZwDZGhTJ3xAf0";
+            var writeRange = $"{sheet}!B:F";
 
-            UserCredential credential;
-
-            using (var stream =
-                new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
+            for (var i = 0; i < count; i++)
             {
-                // The file token.json stores the user's access and refresh tokens, and is created
-                // automatically when the authorization flow completes for the first time.
-                string credPath = "token.json";
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    Scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(credPath, true)).Result;
+                var valueRange = new ValueRange();
+
+                var oblist = new List<object>() { i, "My", "cofee", "is", "black" };
+                valueRange.Values = new List<IList<object>> { oblist };
+
+                var appendRequest = service.Spreadsheets.Values.Append(valueRange, spreadsheetId, writeRange);
+                appendRequest.ValueInputOption =
+                    SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+                appendRequest.Execute();
             }
-
-            // Create Google Sheets API service.
-            var service = new SheetsService(new BaseClientService.Initializer()
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = ApplicationName,
-            });
-
-            //write starting
-            var valueRange = new ValueRange();
-            var oblist = new List<object>() { "Hello!", "This", "was", "insertd by", "C#" };
-            valueRange.Values = new List<IList<object>> { oblist };
-
-            var append = service.Spreadsheets.Values.Append(valueRange, spreadsheetId, WriteRange);
-            var append1 = service.Spreadsheets.Values.Append(valueRange, spreadsheetId, WriteRange1);
-
-            append.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
-            append1.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
         }
     }
 }

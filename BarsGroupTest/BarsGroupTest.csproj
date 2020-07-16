@@ -6,14 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="credentials.json" />
+    <None Remove="client_secret.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="credentials.json">
+    <Content Include="client_secret.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 
