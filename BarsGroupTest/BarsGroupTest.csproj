@@ -16,7 +16,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.48.0.2007" />
+    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.48.0.2014" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BarsGroupTest.Data\BarsGroupTest.Data.csproj" />
+    <ProjectReference Include="..\BarsGroupTest.EF\BarsGroupTest.EF.csproj" />
   </ItemGroup>
 
 </Project>
